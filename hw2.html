@@ -1,0 +1,200 @@
+<html>
+<header>
+<style type="text/css">
+	#info{
+	  position: absolute;
+	  top: 0px;
+	  width: 100%;
+	  padding: 10px;
+	  text-align: center;
+	  color: xffff00;
+	}
+	body{
+		overflow: hidden;
+	}
+</style>
+</header>
+
+<script src="https://threejs.org/build/three.min.js"></script>
+<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+<div id="info">
+</div>
+
+<audio id="collisionsound" style="display:none"><source src="hw2/collision.wav" type="audio/wav"></audio>
+
+<script type="text/javascript">
+
+var camera, scene, renderer;
+var wall_a = [],puck_a = [];
+var force,vel,pos;
+
+class wall{
+	constructor(l,w,h,point,normal){
+	this.l = l;
+	this.w = w;
+	this.h = h;
+	this.obj = new THREE.Mesh(new THREE.BoxGeometry(this.l,this.w,this.h),new THREE.MeshPhongMaterial());
+	this.obj.point = new THREE.Vector3(point.x,point.y,point.z);
+	this.obj.normal = new THREE.Vector3(normal.x,normal.y,normal.z);
+	}
+}
+
+class puck{
+	constructor(pos1,pos2,pl,height,sizes,force,vel,pos,color){
+	this.pos1 = pos1;
+	this.pos2 = pos2;
+	this.height = height;
+	this.sizes = sizes;
+	this.obj = new THREE.Mesh(new THREE.CylinderGeometry(this.pos1,this.pos2,this.height,this.sizes),
+							  color);
+	this.obj.position.y = 5;
+	this.force = new THREE.Vector3(force.x,force.y,force.z);
+	this.vel = new THREE.Vector3(vel.x,vel.y,vel.z);
+	this.pos = new THREE.Vector3(pos.x,pos.y,pos.z);
+	this.puckLight = new THREE.PointLight(pl,1,300);
+	scene.add(this.puckLight);
+	}
+}
+	
+init();
+animate();
+
+function init() {
+
+	CollisionSound = document.getElementById("collisionsound");
+
+	//初始化
+	scene = new THREE.Scene();
+	renderer = new THREE.WebGLRenderer();
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.setClearColor(0x888888);
+	document.body.appendChild(renderer.domElement);
+	camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+	camera.position.z = 500;
+	let controls = new THREE.OrbitControls(camera, renderer.domElement);
+	var gridXZ = new THREE.GridHelper(200, 20, 'red', 'white');
+
+	//燈光
+	var light = new THREE.AmbientLight(0x404040);
+	scene.add(light);
+
+
+	
+	//建立牆壁
+	var tmp
+	tmp = new wall(10,20,200,new THREE.Vector3(100,0,0),new THREE.Vector3(-1,0,0));
+	tmp.obj.position.set(105,10,0);
+	scene.add(tmp.obj)
+	wall_a.push(tmp);
+	tmp = new wall(10,20,200,new THREE.Vector3(-100,0,0),new THREE.Vector3(1,0,0));
+	tmp.obj.position.set(-105,10,0);
+	scene.add(tmp.obj)
+	wall_a.push(tmp);
+	tmp = new wall(200,20,10,new THREE.Vector3(0,0,100),new THREE.Vector3(0,0,-1));
+	tmp.obj.position.set(0,10,105);
+	scene.add(tmp.obj)
+	wall_a.push(tmp);
+	tmp = new wall(200,20,10,new THREE.Vector3(0,0,-100),new THREE.Vector3(0,0,1));
+	tmp.obj.position.set(0,10,-105);
+	scene.add(tmp.obj)
+	wall_a.push(tmp);
+	
+	//建立球
+	var tmp1
+	tmp1 = new puck(15,15,0x322233,4,20,new THREE.Vector3(0,0,0),new THREE.Vector3(10, 0, -10),new THREE.Vector3(25,0,25),new THREE.MeshBasicMaterial({color:0xFF5511}));
+	scene.add(tmp1.obj);
+	puck_a.push(tmp1);
+
+	tmp1 = new puck(15,15,0x876567,4,20,new THREE.Vector3(0,0,0),new THREE.Vector3(10, 0, 10),new THREE.Vector3(-50,0,-25),new THREE.MeshBasicMaterial({color:0xFFFF33}));
+	scene.add(tmp1.obj);
+	puck_a.push(tmp1);
+
+	tmp1 = new puck(15,15,0x345321,4,20,new THREE.Vector3(0,0,0),new THREE.Vector3(-10, 0, 10),new THREE.Vector3(-10,0,25),new THREE.MeshBasicMaterial({color:0x33FFAA}));
+	scene.add(tmp1.obj);
+	puck_a.push(tmp1);
+
+	tmp1 = new puck(15,15,0x122213,4,20,new THREE.Vector3(0,0,0),new THREE.Vector3(10, 0, -10),new THREE.Vector3(45,0,0),new THREE.MeshBasicMaterial({color:0xB088FF}));
+	scene.add(tmp1.obj);
+	puck_a.push(tmp1);
+
+	tmp1 = new puck(15,15,0xaaaaaa,4,20,new THREE.Vector3(0,0,0),new THREE.Vector3(10, 0, -10),new THREE.Vector3(-10,0,-10),new THREE.MeshBasicMaterial({color:0x115566}));
+	scene.add(tmp1.obj);
+	puck_a.push(tmp1);
+
+	//地板
+	var floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshPhongMaterial());
+	scene.add(floor);
+	floor.rotation.x = -Math.PI / 2;
+
+}
+
+function animate() {
+	var dt = 0.1;
+	var eps = 1e-1; //0.1
+	var cR = 1.0;
+	var tmp1,tmp,puck2;
+	//球體運動
+	for(i=0; i<puck_a.length; i++){
+		let tmp1 = puck_a[i];
+		tmp1.vel.add(tmp1.force.clone().multiplyScalar(dt));
+		tmp1.pos.add(tmp1.vel.clone().multiplyScalar(dt));
+		tmp1.obj.position.copy(tmp1.pos);
+		tmp1.obj.position.y += 2;
+		tmp1.puckLight.position.copy(tmp1.pos);
+		tmp1.puckLight.position.y += 10;
+	}
+	
+	//球體和牆壁碰撞
+	for(i = 0;i < wall_a.length;i++){
+		let tmp = wall_a[i];
+		for(j = 0;j < puck_a.length;j++){
+			let tmp1 = puck_a[j];
+			if(tmp1.pos.clone().sub(tmp.obj.point).dot(tmp.obj.normal) < eps + 15){
+				CollisionSound.play();
+				var vN = tmp.obj.normal.clone().multiplyScalar(tmp1.vel.dot(tmp.obj.normal));
+				var vT = tmp1.vel.clone().sub(vN);
+				tmp1.vel.copy(vT.add(vN.multiplyScalar(-cR)));
+			}
+		}
+	}
+
+	//球體互相碰撞
+	for(i = 0;i < puck_a.length;i++){
+		let tmp1 = puck_a[i];
+		for(j = i+1;j < puck_a.length;j++){
+			if (j==i){
+			
+				continue
+				
+			}
+			let puck2 = puck_a[j];
+			var distance = tmp1.pos.clone().sub(puck2.pos).length();
+			if(distance < 30){
+				CollisionSound.play();
+				var offset = ((30 - distance)/2)/distance;
+				var new_position = tmp1.pos.clone().sub(puck2.pos).multiplyScalar(offset);
+				tmp1.pos.add(new_position);
+				puck2.pos.sub(new_position);
+				var place1 = tmp1.vel.clone().sub(tmp1.pos.clone().sub(puck2.pos).multiplyScalar(tmp1.vel.clone().sub(puck2.vel).dot(tmp1.pos.clone().sub(puck2.pos))/Math.pow(tmp1.pos.clone().sub(puck2.pos).length(),2)));
+				var place2 = puck2.vel.clone().sub(puck2.pos.clone().sub(tmp1.pos).multiplyScalar(puck2.vel.clone().sub(tmp1.vel).dot(puck2.pos.clone().sub(tmp1.pos))/Math.pow(puck2.pos.clone().sub(tmp1.pos).length(),2)));
+				tmp1.vel.copy(place1);
+				puck2.vel.copy(place2);
+
+			}
+			
+		}
+	}
+
+	requestAnimationFrame(animate);
+	render();
+
+	}
+
+	function render() {
+		renderer.render(scene, camera);
+	}
+
+
+  </script><canvas width="1680" height="858" tabindex="0" style="width: 1680px; height: 858px;"></canvas>
+  
+</body></html>
