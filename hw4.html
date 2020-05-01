@@ -35,7 +35,7 @@ function collision_wall(){
 }
   	var scene, renderer, camera;
 
-	var puck,puck1;
+	var puck,puck_;
 	var raycaster;
 	var mouse = new THREE.Vector2();
 	var pickables = [];
@@ -46,7 +46,7 @@ function collision_wall(){
 	//////////////////////////
 
 	var clock = new THREE.Clock();
-	var now = 50;
+	var now = 5;
 
 	var previousEnd = new THREE.Vector3();
 	var previousEnd1 = new THREE.Vector3();
@@ -177,34 +177,34 @@ function collision_wall(){
 	  puck = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 2, 20), new THREE.MeshNormalMaterial());
 	  scene.add(puck);
 		//////////////////////
-	  puck1 = new THREE.Mesh(new THREE.CylinderGeometry(10, 10, 10, 20), new THREE.MeshLambertMaterial({color:0xCFCFC	}));
-	  //puck1.position.set(80, 0 ,49)
-	  scene.add(puck1);
+	  puck_ = new THREE.Mesh(new THREE.CylinderGeometry(10, 10, 10, 20), new THREE.MeshLambertMaterial({color:0xCFCFC	}));
+	  //puck_.position.set(80, 0 ,49)
+	  scene.add(puck_);
 	  
 	  puckLight = new THREE.PointLight(0xCFCFC,1,5000);
 	  scene.add(puckLight);
-	  puck1.force = new THREE.Vector3(0,0,0);
-	  puck1.vel = new THREE.Vector3(0,0,0);
-	  puck1.pos = new THREE.Vector3(0,5,150);
+	  puck_.force = new THREE.Vector3(0,0,0);
+	  puck_.vel = new THREE.Vector3(0,0,0);
+	  puck_.pos = new THREE.Vector3(0,5,150);
 
 	  ////////////////////////
 	  var sidewall;
 	  for(i = 0;i < 4;i++){
 	  	switch(i){
 	    	case 0:
-				sidewall = new wall(10,20,500,new THREE.Vector3(100,0,0),new THREE.Vector3(-1,0,0));
+				sidewall = new wall(10,20,500,new THREE.Vector3(115,0,0),new THREE.Vector3(-1,0,0));
 				sidewall.goToOtherPosition(120,10,0);
 	      	break;
 			case 1:
-				sidewall = new wall(10,20,500,new THREE.Vector3(-100,0,0),new THREE.Vector3(1,0,0));
+				sidewall = new wall(10,20,500,new THREE.Vector3(-115,0,0),new THREE.Vector3(1,0,0));
 				sidewall.goToOtherPosition(-120,10,0);
 	      	break;
 	    	case 2:
-				sidewall = new wall(250,20,10,new THREE.Vector3(0,0,300),new THREE.Vector3(0,0,-1));
+				sidewall = new wall(250,20,10,new THREE.Vector3(0,0,250),new THREE.Vector3(0,0,-1));
 				sidewall.goToOtherPosition(0,10,250);       
 	      	break;
 	     	case 3:
-				sidewall = new wall(250,20,10,new THREE.Vector3(0,0,-300),new THREE.Vector3(0,0,1));
+				sidewall = new wall(250,20,10,new THREE.Vector3(0,0,-250),new THREE.Vector3(0,0,1));
 				sidewall.goToOtherPosition(0,10,-250);
 	      	break;
 	    }
@@ -268,46 +268,46 @@ function collision_wall(){
 	  var dt = 0.02;
 	  var eps = 1e-1; //0.1
 	  var cR = 1.0;
-	  puck1.vel.add(puck1.force.clone().multiplyScalar(dt));
-	  puck1.pos.add(puck1.vel.clone().multiplyScalar(dt));
-	  puck1.position.copy(puck1.pos);
-	  twoLinker1.target.copy ( twoLinker1.body.worldToLocal (puck1.position.clone()) ) ;
-	  puckLight.position.copy(puck1.pos);
+	  puck_.vel.add(puck_.force.clone().multiplyScalar(dt));
+	  puck_.pos.add(puck_.vel.clone().multiplyScalar(dt));
+	  puck_.position.copy(puck_.pos);
+	  twoLinker1.target.copy ( twoLinker1.body.worldToLocal (puck_.position.clone()) ) ;
+	  puckLight.position.copy(puck_.pos);
 	  puckLight.position.y += 10;
 	  ////////////////////////////
 	  
 	  requestAnimationFrame(animate);
 	  updateArms()
 	  /////////////////////////////
-	  var distance = puck1.pos.clone().sub(endNow).length();
+	  var distance = puck_.pos.clone().sub(endNow).length();
 	  if(distance < 20){
 	    collision_wall();
 	    var offset = ((20 - distance)/2)/distance;
-	    var Voffset1 = puck1.pos.clone().sub(endNow.clone()).multiplyScalar(offset);
-	    var v = puck1.vel.clone().sub(puck1.pos.clone().sub(endNow).multiplyScalar(puck1.vel.clone().sub(vel).dot(puck1.pos.clone().sub(endNow))/Math.pow(puck1.pos.clone().sub(endNow).length(),2)));
+	    var Voffset1 = puck_.pos.clone().sub(endNow.clone()).multiplyScalar(offset);
+	    var v = puck_.vel.clone().sub(puck_.pos.clone().sub(endNow).multiplyScalar(puck_.vel.clone().sub(vel).dot(puck_.pos.clone().sub(endNow))/Math.pow(puck_.pos.clone().sub(endNow).length(),2)));
 	    console.log(v);
-	    puck1.pos.add(Voffset1);
+	    puck_.pos.add(Voffset1);
 
-	    puck1.vel.copy(v);
+	    puck_.vel.copy(v);
 	  }
 	  /////////////////////////////////
-	  var distance1 = puck1.pos.clone().sub(endNow1).length();
+	  var distance1 = puck_.pos.clone().sub(endNow1).length();
 	  if(distance1 < 20){
 	    collision_wall();
 	    var offset1 = ((20 - distance1)/2)/distance1;
-	    var Voffset2 = puck1.pos.clone().sub(endNow1.clone()).multiplyScalar(offset1);
-	    var v = puck1.vel.clone().multiplyScalar(-1);
-	    puck1.pos.add(Voffset2);    
-	    puck1.vel.copy(v);
+	    var Voffset2 = puck_.pos.clone().sub(endNow1.clone()).multiplyScalar(offset1);
+	    var v = puck_.vel.clone().multiplyScalar(-1);
+	    puck_.pos.add(Voffset2);    
+	    puck_.vel.copy(v);
 	  }
 	  ///////////////////////////////
 	  for(i = 0;i < walls.length;i++){
 	    let sidewall = walls[i];
-	    if(puck1.pos.clone().sub(sidewall.getPoint).dot(sidewall.getNormal) < eps + 10){
+	    if(puck_.pos.clone().sub(sidewall.getPoint).dot(sidewall.getNormal) < eps + 10){
 		  collision_wall();
-	      var vN = sidewall.getNormal.clone().multiplyScalar(puck1.vel.dot(sidewall.getNormal));
-	      var vT = puck1.vel.clone().sub(vN);
-	      puck1.vel.copy(vT.add(vN.multiplyScalar(-cR)));
+	      var vN = sidewall.getNormal.clone().multiplyScalar(puck_.vel.dot(sidewall.getNormal));
+	      var vT = puck_.vel.clone().sub(vN);
+	      puck_.vel.copy(vT.add(vN.multiplyScalar(-cR)));
 	    }
 	  }
 	  
@@ -370,7 +370,7 @@ function collision_wall(){
 	    puck.position.copy(intersects[0].point);
 	    //twoLinker.target.copy (intersects[0].point);
 	    // this is not enough ...
-	    puck1.position.copy(intersects[0].point);
+	    puck_.position.copy(intersects[0].point);
 	    twoLinker0.target.copy ( twoLinker0.body.worldToLocal (puck.position.clone()) )  
 	    twoLinker1.target.copy ( twoLinker1.body.worldToLocal (puck.position.clone()) )  
 	  }
