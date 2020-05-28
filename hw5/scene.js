@@ -6,6 +6,8 @@ function sceneDesign() {
   scene.obstacles.push ( new Obstacle (new THREE.Vector3(150,0,150), 50) )
   scene.obstacles.push ( new Obstacle (new THREE.Vector3(-100,0,200), 30) )
   scene.obstacles.push ( new Obstacle (new THREE.Vector3(0,0,-100), 60) )
+  scene.obstacles.push ( new Obstacle (new THREE.Vector3(0,0,100), 40) )
+  scene.obstacles.push ( new Obstacle (new THREE.Vector3(250,0,-100), 60) )
     
   scene.targets = [];
   scene.targets.push (new Target (1, new THREE.Vector3 (300,0,300) ));
