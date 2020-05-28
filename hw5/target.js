@@ -1,3 +1,7 @@
+function getRandom(x){
+    return Math.floor(Math.random()*x)+1;
+};
+
 class Target {
 	constructor (id, pos) {
 		this.id = id;
@@ -10,11 +14,11 @@ class Target {
 	}
 	setFound (agent) {
 		this.found = true;
-		this.mesh.material.visible = false;
+		//this.mesh.material.visible = false;
 		postMessage (agent, 'TARGET reached');
 		
-		agent.score += 10;			
-		
+		agent.score += 5;			
+		this.mesh.position.set(getRandom(100), 0, getRandom(100));
 		// remove from scene.targets
 		for (let i = 0; i < scene.targets.length; i++) {
 			if (scene.targets[i].id === this.id) scene.targets.splice (i, 1)
